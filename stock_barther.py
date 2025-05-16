@@ -61,6 +61,9 @@ def register_product(product_df):
     if not product_df.empty:
         with st.form("inventory_form"):
             selected_product = st.selectbox("Select Product", product_df["product_name"].tolist(), key="inv_select")
+            product_row = product_df[product_df["product_name"] == selected_product].iloc[0]
+            st.markdown(f"**Unit Type:** {product_row['unit_type']}")
+            st.markdown(f"**Batch ID:** {product_row['batch_id']}")
             stock_in = st.number_input("Stock In", min_value=0, step=1, key="inv_stock_in")
             stock_out = st.number_input("Stock Out", min_value=0, step=1, key="inv_stock_out")
             price = st.number_input("Price per Unit", min_value=0.0, step=0.1, key="inv_price")
@@ -183,14 +186,14 @@ if menu == "Dashboard":
         inventory_df = pd.read_sql("SELECT *, (stock_in - stock_out) AS stock_total, (stock_in - stock_out) AS stock_change FROM inventory_log", conn)
         inventory_df["trend"] = inventory_df["stock_in"] - inventory_df["stock_out"]
         inventory_df["trend_icon"] = inventory_df["trend"].apply(lambda x: "📈" if x > 0 else ("📉" if x < 0 else "➖"))
-        inventory_df["name"] = inventory_df["trend_icon"] + " " + inventory_df["name"]
+        inventory_df["display_name"] = inventory_df["trend_icon"] + " " + inventory_df["name"]
 
-        trend_summary = inventory_df.groupby("name")["trend"].sum().reset_index().rename(columns={"trend": "total_trend"})
+        trend_summary = inventory_df.groupby("display_name")["trend"].sum().reset_index().rename(columns={"trend": "total_trend"})
         st.subheader("📊 Product Trend Summary")
         st.dataframe(trend_summary, use_container_width=True)
 
         import plotly.express as px
-        fig = px.bar(trend_summary, x="name", y="total_trend", color="total_trend", title="📈 Trend Change per Product")
+        fig = px.bar(trend_summary, x="display_name", y="total_trend", color="total_trend", title="📈 Trend Change per Product")
         st.plotly_chart(fig, use_container_width=True)
         import numpy as np
 
@@ -317,6 +320,7 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
 
 
 
