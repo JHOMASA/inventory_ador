@@ -49,7 +49,7 @@ if "query_history" not in st.session_state:
     st.session_state.query_history = []
 
 # Product registration form
-def register_product()
+def register_product():
 
     # Inventory entry form
     st.subheader("📥 Add Inventory Movement")
@@ -83,7 +83,7 @@ def register_product()
                 conn.commit()
                 st.success("Inventory entry added successfully!")
         else:
-            st.warning("Please register a product before adding inventory entries."):
+            st.warning("Please register a product before adding inventory entries.")
     st.subheader("➕ Register New Product")
     with st.form("product_form"):
         product_id = st.text_input("Product ID")
@@ -213,5 +213,4 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
-
 
