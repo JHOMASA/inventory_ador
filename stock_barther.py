@@ -57,7 +57,9 @@ def register_product(product_df):
     # Inventory entry form
     st.subheader("📥 Add Inventory Movement")
     with st.form("inventory_form"):
-        if not product_df.empty:
+        submitted_inv = st.form_submit_button("Add Inventory Entry")
+
+        if not product_df.empty and submitted_inv:
             selected_product = st.selectbox("Select Product", product_df["product_name"].tolist())
             product_row = product_df[product_df["product_name"] == selected_product].iloc[0]
             stock_in = st.number_input("Stock In", min_value=0, step=1)
