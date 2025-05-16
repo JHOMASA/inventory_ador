@@ -88,7 +88,7 @@ SELECT name, SUM(stock_in) AS total_in, SUM(stock_out) AS total_out
 FROM inventory_log
 WHERE name = ?
 GROUP BY name
-""", conn, params=(selected_product,)))
+""", conn, params=(selected_product,))
 
                 if not stock_summary.empty:
                     current_balance = stock_summary["total_in"].iloc[0] - stock_summary["total_out"].iloc[0]
