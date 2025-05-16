@@ -48,10 +48,32 @@ menu = st.sidebar.radio("Navigation", ["Dashboard", "SQL Console"])
 if "query_history" not in st.session_state:
     st.session_state.query_history = []
 
+# Product registration form
+def register_product():
+    st.subheader("➕ Register New Product")
+    with st.form("product_form"):
+        product_id = st.text_input("Product ID")
+        product_name = st.text_input("Product Name")
+        description = st.text_area("Description")
+        unit_type = st.text_input("Unit Type")
+        batch_id = st.text_input("Batch ID")
+        submitted = st.form_submit_button("Register Product")
+        if submitted:
+            try:
+                cursor.execute("""
+                    INSERT INTO product_registry (product_id, product_name, description, unit_type, batch_id, date_registered)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (product_id, product_name, description, unit_type, batch_id, datetime.now().strftime("%Y-%m-%d")))
+                conn.commit()
+                st.success(f"Product '{product_name}' registered successfully.")
+            except sqlite3.IntegrityError:
+                st.error("❌ Product ID already exists. Please use a unique ID.")
+
 if menu == "Dashboard":
     st.title("📦 Inventory In/Out Dashboard - 40 Items")
 
-    # -- Product Registry Sheet --
+    register_product()
+
     try:
         st.subheader("📒 Product Registry")
         product_df = pd.read_sql("SELECT * FROM product_registry", conn)
@@ -60,7 +82,6 @@ if menu == "Dashboard":
         product_df = pd.DataFrame()
         st.warning("📭 Product registry is empty or missing.")
 
-    # -- Inventory Log Sheet (Stock Movements) --
     try:
         st.subheader("📋 Current Inventory")
         inventory_df = pd.read_sql("SELECT * FROM inventory_log", conn)
@@ -98,7 +119,6 @@ if menu == "Dashboard":
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
-    # Raw Database Tables
     with st.expander("📂 Show Raw Tables"):
         try:
             st.subheader("🗂 Product Registry (Raw View)")
@@ -129,7 +149,6 @@ elif menu == "SQL Console":
                 st.success("✅ Query executed successfully!")
                 st.dataframe(query_result, use_container_width=True)
 
-                # Save query to history
                 if query_input not in st.session_state.query_history:
                     st.session_state.query_history.insert(0, query_input)
 
@@ -160,4 +179,5 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
 
