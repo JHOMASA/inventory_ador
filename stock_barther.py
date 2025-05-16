@@ -63,6 +63,8 @@ def register_product(product_df):
             submitted_inv = st.form_submit_button("Add Entry")
             if submitted_inv:
                 now = datetime.now()
+                date_str = date_str
+                time_str = time_str
 date_str = now.strftime("%Y-%m-%d")
 time_str = now.strftime("%H:%M:%S")
                 cursor.execute("""
@@ -232,5 +234,6 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
 
 
