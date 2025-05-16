@@ -49,7 +49,41 @@ if "query_history" not in st.session_state:
     st.session_state.query_history = []
 
 # Product registration form
-def register_product():
+def register_product()
+
+    # Inventory entry form
+    st.subheader("📥 Add Inventory Movement")
+    with st.form("inventory_form"):
+        if not product_df.empty:
+            selected_product = st.selectbox("Select Product", product_df["product_name"].tolist())
+            product_row = product_df[product_df["product_name"] == selected_product].iloc[0]
+            stock_in = st.number_input("Stock In", min_value=0, step=1)
+            stock_out = st.number_input("Stock Out", min_value=0, step=1)
+            price = st.number_input("Price per Unit", min_value=0.0, step=0.1)
+            submitted_inv = st.form_submit_button("Add Entry")
+            if submitted_inv:
+                now = datetime.now()
+                cursor.execute("""
+                    INSERT INTO inventory_log (product_id, name, description, stock_in, stock_out, price, units, batch_id, date_in, time_in, date_out, time_out)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    product_row["product_id"],
+                    selected_product,
+                    product_row["description"],
+                    stock_in,
+                    stock_out,
+                    price,
+                    product_row["unit_type"],
+                    product_row["batch_id"],
+                    now.strftime("%Y-%m-%d"),
+                    now.strftime("%H:%M:%S"),
+                    now.strftime("%Y-%m-%d") if stock_out > 0 else "",
+                    now.strftime("%H:%M:%S") if stock_out > 0 else ""
+                ))
+                conn.commit()
+                st.success("Inventory entry added successfully!")
+        else:
+            st.warning("Please register a product before adding inventory entries."):
     st.subheader("➕ Register New Product")
     with st.form("product_form"):
         product_id = st.text_input("Product ID")
