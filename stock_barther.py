@@ -79,8 +79,7 @@ def register_product(product_df):
                     product_row["batch_id"],
                     now.strftime("%Y-%m-%d"),
                     now.strftime("%H:%M:%S"),
-                    date_str if stock_out > 0 else "",
-                    time_str if stock_out > 0 else ""
+                    "", ""
                 ))
                 conn.commit()
                 st.success("Inventory entry added successfully!")
@@ -232,7 +231,6 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
-
 
 
 
