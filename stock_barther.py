@@ -96,6 +96,8 @@ def register_product(product_df):
         description = st.text_area("Description")
         unit_type = st.text_input("Unit Type")
         batch_id = st.text_input("Batch ID")
+        total_units_input = st.number_input("Total Units", min_value=0)
+        expiration_input = st.date_input("Expiration Date")
         submitted = st.form_submit_button("Register Product")
         if submitted:
             try:
@@ -103,8 +105,11 @@ def register_product(product_df):
                     INSERT INTO product_registry (product_id, product_name, description, unit_type, batch_id, date_registered, total_units, expiration_date)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """, (product_id, product_name, description, unit_type, batch_id, datetime.now(pytz.timezone("America/Lima")).strftime("%Y-%m-%d"),
-                      int(st.number_input("Total Units", min_value=0)),
-                      st.date_input("Expiration Date").strftime("%Y-%m-%d") ))
+                      int(total_units_input), expiration_input.strftime("%Y-%m-%d")))
+                conn.commit()
+                st.success(f"Product '{product_name}' registered successfully.")
+            except sqlite3.IntegrityError:
+                st.error("❌ Product ID already exists. Please use a unique ID.")
                 conn.commit()
                 st.success(f"Product '{product_name}' registered successfully.")
             except sqlite3.IntegrityError:
@@ -251,7 +256,6 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
-
 
 
 
