@@ -17,7 +17,9 @@ CREATE TABLE IF NOT EXISTS product_registry (
     description TEXT,
     unit_type TEXT,
     batch_id TEXT,
-    date_registered TEXT
+    date_registered TEXT,
+    total_units INTEGER,
+    expiration_date TEXT
 )
 """)
 
@@ -98,9 +100,11 @@ def register_product(product_df):
         if submitted:
             try:
                 cursor.execute("""
-                    INSERT INTO product_registry (product_id, product_name, description, unit_type, batch_id, date_registered)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (product_id, product_name, description, unit_type, batch_id, datetime.now(pytz.timezone("America/Lima")).strftime("%Y-%m-%d")))
+                    INSERT INTO product_registry (product_id, product_name, description, unit_type, batch_id, date_registered, total_units, expiration_date)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (product_id, product_name, description, unit_type, batch_id, datetime.now(pytz.timezone("America/Lima")).strftime("%Y-%m-%d"),
+                      int(st.number_input("Total Units", min_value=0)),
+                      st.date_input("Expiration Date").strftime("%Y-%m-%d") ))
                 conn.commit()
                 st.success(f"Product '{product_name}' registered successfully.")
             except sqlite3.IntegrityError:
@@ -110,7 +114,7 @@ if menu == "Dashboard":
     st.title("📦 Inventory In/Out Dashboard - 40 Items")
 
     try:
-        product_df = pd.read_sql("SELECT * FROM product_registry", conn)
+        product_df = pd.read_sql("SELECT *, total_units, expiration_date FROM product_registry", conn)
     except Exception:
         product_df = pd.DataFrame()
 
@@ -120,15 +124,29 @@ if menu == "Dashboard":
         st.subheader("📒 Product Registry")
         product_df = pd.read_sql("SELECT * FROM product_registry", conn)
         st.dataframe(product_df, use_container_width=True)
+
+        selected_delete = st.selectbox("Select Product ID to Delete", product_df["product_id"].tolist() if not product_df.empty else [])
+        if st.button("🗑️ Delete Selected Product"):
+            cursor.execute("DELETE FROM product_registry WHERE product_id = ?", (selected_delete,))
+            conn.commit()
+            st.success(f"Product ID '{selected_delete}' deleted.")
     except Exception:
         product_df = pd.DataFrame()
         st.warning("📭 Product registry is empty or missing.")
 
     try:
         st.subheader("📋 Current Inventory")
+        inventory_df = pd.read_sql("SELECT *, (stock_in - stock_out) AS stock_total FROM inventory_log", conn)
+        st.dataframe(inventory_df, use_container_width=True)
+
+        selected_log = st.selectbox("Select Inventory Row ID to Delete", inventory_df["id"].tolist() if not inventory_df.empty else [])
+        if st.button("🗑️ Delete Selected Inventory Record"):
+            cursor.execute("DELETE FROM inventory_log WHERE id = ?", (selected_log,))
+            conn.commit()
+            st.success(f"Inventory log ID '{selected_log}' deleted.")
 
         # Check for low inventory warnings
-        inventory_df = pd.read_sql("SELECT * FROM inventory_log", conn)
+        inventory_df = pd.read_sql("SELECT *, (stock_in - stock_out) AS stock_total FROM inventory_log", conn)
         try:
             stock_summary = inventory_df.groupby("name")[["stock_in", "stock_out"]].sum()
             stock_summary["balance"] = stock_summary["stock_in"] - stock_summary["stock_out"]
@@ -233,6 +251,7 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
 
 
 
