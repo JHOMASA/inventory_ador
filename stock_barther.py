@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS inventory_log (
     date_out TEXT,
     time_out TEXT,
     current_inventory INTEGER
-)""")
+)
 """)
 
 conn.commit()
@@ -315,4 +315,3 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
-
