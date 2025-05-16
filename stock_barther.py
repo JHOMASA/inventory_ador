@@ -49,7 +49,7 @@ if "query_history" not in st.session_state:
     st.session_state.query_history = []
 
 # Product registration form
-def register_product():
+def register_product(product_df):
 
     # Inventory entry form
     st.subheader("📥 Add Inventory Movement")
@@ -106,7 +106,7 @@ def register_product():
 if menu == "Dashboard":
     st.title("📦 Inventory In/Out Dashboard - 40 Items")
 
-    register_product()
+    register_product(product_df)
 
     try:
         st.subheader("📒 Product Registry")
@@ -213,4 +213,3 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
-
