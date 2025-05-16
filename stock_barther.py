@@ -92,6 +92,8 @@ GROUP BY name
             except Exception as e:
                 st.warning("⚠️ Could not calculate current stock due to a query error.")
 
+            if 'current_balance' not in locals():
+                current_balance = 0
             if stock_out > current_balance:
                 st.error(f"❌ Stock out ({stock_out}) exceeds available balance ({current_balance}). Entry not allowed.")
             elif st.button("✅ Confirm and Submit Entry"):
@@ -178,7 +180,7 @@ if menu == "Dashboard":
 
     try:
         st.subheader("📋 Current Inventory")
-        inventory_df = pd.read_sql("SELECT *, (stock_in - stock_out) AS stock_total FROM inventory_log", conn)
+        inventory_df = pd.read_sql("SELECT *, (stock_in - stock_out) AS stock_total, (stock_in - stock_out) AS stock_change FROM inventory_log", conn)
         inventory_df["trend"] = inventory_df["stock_in"] - inventory_df["stock_out"]
         inventory_df["trend_icon"] = inventory_df["trend"].apply(lambda x: "📈" if x > 0 else ("📉" if x < 0 else "➖"))
         inventory_df["name"] = inventory_df["trend_icon"] + " " + inventory_df["name"]
@@ -186,6 +188,10 @@ if menu == "Dashboard":
         trend_summary = inventory_df.groupby("name")["trend"].sum().reset_index().rename(columns={"trend": "total_trend"})
         st.subheader("📊 Product Trend Summary")
         st.dataframe(trend_summary, use_container_width=True)
+
+        import plotly.express as px
+        fig = px.bar(trend_summary, x="name", y="total_trend", color="total_trend", title="📈 Trend Change per Product")
+        st.plotly_chart(fig, use_container_width=True)
         import numpy as np
 
         def highlight_stock(row):
@@ -311,6 +317,7 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
 
 
 
