@@ -123,7 +123,7 @@ def register_product(product_df):
                 conn.commit()
                 st.success("Inventory entry added successfully!")
         else:
-        st.warning("Please register a product before adding inventory entries.")
+            st.warning("Please register a product before adding inventory entries.")
     st.subheader("➕ Register New Product")
     with st.form("product_form"):
         product_id = st.text_input("Product ID")
@@ -291,6 +291,4 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
-
-
 
