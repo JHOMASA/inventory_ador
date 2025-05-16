@@ -64,14 +64,8 @@ def register_product(product_df):
             price = st.number_input("Price per Unit", min_value=0.0, step=0.1)
             submitted_inv = st.form_submit_button("Add Inventory Entry")
 
-        if submitted_inv:
-            selected_product = st.selectbox("Select Product", product_df["product_name"].tolist())
-            product_row = product_df[product_df["product_name"] == selected_product].iloc[0]
-            stock_in = st.number_input("Stock In", min_value=0, step=1)
-            stock_out = st.number_input("Stock Out", min_value=0, step=1)
-            price = st.number_input("Price per Unit", min_value=0.0, step=0.1)
-            submitted_inv = st.form_submit_button("Add Entry")
             if submitted_inv:
+                product_row = product_df[product_df["product_name"] == selected_product].iloc[0]
                 peru_tz = pytz.timezone("America/Lima")
                 now = datetime.now(peru_tz)
                 date_str = now.strftime("%Y-%m-%d")
@@ -88,9 +82,10 @@ def register_product(product_df):
                     price,
                     product_row["unit_type"],
                     product_row["batch_id"],
-                    now.strftime("%Y-%m-%d"),
-                    now.strftime("%H:%M:%S"),
-                    "", ""
+                    date_str,
+                    time_str,
+                    "",
+                    ""
                 ))
                 conn.commit()
                 st.success("Inventory entry added successfully!")
