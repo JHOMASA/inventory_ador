@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import pytz
 import sqlite3
 import io
 
@@ -62,7 +63,8 @@ def register_product(product_df):
             price = st.number_input("Price per Unit", min_value=0.0, step=0.1)
             submitted_inv = st.form_submit_button("Add Entry")
             if submitted_inv:
-                now = datetime.now()
+                peru_tz = pytz.timezone("America/Lima")
+                now = datetime.now(peru_tz)
                 date_str = now.strftime("%Y-%m-%d")
                 time_str = now.strftime("%H:%M:%S")
                 cursor.execute("""
@@ -98,7 +100,7 @@ def register_product(product_df):
                 cursor.execute("""
                     INSERT INTO product_registry (product_id, product_name, description, unit_type, batch_id, date_registered)
                     VALUES (?, ?, ?, ?, ?, ?)
-                """, (product_id, product_name, description, unit_type, batch_id, datetime.now().strftime("%Y-%m-%d")))
+                """, (product_id, product_name, description, unit_type, batch_id, datetime.now(pytz.timezone("America/Lima")).strftime("%Y-%m-%d")))
                 conn.commit()
                 st.success(f"Product '{product_name}' registered successfully.")
             except sqlite3.IntegrityError:
@@ -231,7 +233,6 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
-
 
 
 
