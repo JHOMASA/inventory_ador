@@ -64,33 +64,7 @@ def register_product(product_df):
             price = st.number_input("Price per Unit", min_value=0.0, step=0.1)
             submitted_inv = st.form_submit_button("Add Inventory Entry")
 
-            if submitted_inv:
-                product_row = product_df[product_df["product_name"] == selected_product].iloc[0]
-                peru_tz = pytz.timezone("America/Lima")
-                now = datetime.now(peru_tz)
-                date_str = now.strftime("%Y-%m-%d")
-                time_str = now.strftime("%H:%M:%S")
-                cursor.execute("""
-                    INSERT INTO inventory_log (product_id, name, description, stock_in, stock_out, price, units, batch_id, date_in, time_in, date_out, time_out)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    product_row["product_id"],
-                    selected_product,
-                    product_row["description"],
-                    stock_in,
-                    stock_out,
-                    price,
-                    product_row["unit_type"],
-                    product_row["batch_id"],
-                    date_str,
-                    time_str,
-                    "",
-                    ""
-                ))
-                conn.commit()
-                st.success("Inventory entry added successfully!")
-        else:
-            st.warning("Please register a product before adding inventory entries.")
+    
         if submitted_inv:
             selected_product = st.selectbox("Select Product", product_df["product_name"].tolist())
             stock_in = st.number_input("Stock In", min_value=0, step=1)
@@ -292,3 +266,4 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
