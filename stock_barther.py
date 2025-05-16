@@ -126,6 +126,7 @@ if menu == "Dashboard":
         st.subheader("📋 Current Inventory")
 
         # Check for low inventory warnings
+        inventory_df = pd.read_sql("SELECT * FROM inventory_log", conn)
         try:
             stock_summary = inventory_df.groupby("name")[["stock_in", "stock_out"]].sum()
             stock_summary["balance"] = stock_summary["stock_in"] - stock_summary["stock_out"]
@@ -135,8 +136,7 @@ if menu == "Dashboard":
                 if total_in > 0 and balance / total_in <= 0.2:
                     st.warning(f"⚠️ Warning: '{product}' has dropped to {balance} units, which is below 20% of its total stock ({total_in}).")
         except Exception as e:
-            st.info("ℹ️ Unable to calculate inventory warnings due to missing or malformed data.")
-        inventory_df = pd.read_sql("SELECT * FROM inventory_log", conn)
+            st.info("ℹ️ Unable to calculate inventory warnings due to missing or malformed data.")"SELECT * FROM inventory_log", conn)
         st.dataframe(inventory_df, use_container_width=True)
     except Exception:
         inventory_df = pd.DataFrame()
@@ -231,6 +231,7 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
 
 
 
