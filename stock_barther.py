@@ -56,7 +56,14 @@ def register_product(product_df):
 
     # Inventory entry form
     st.subheader("📥 Add Inventory Movement")
-    with st.form("inventory_form"):
+
+    if not product_df.empty:
+        with st.form("inventory_form"):
+            selected_product = st.selectbox("Select Product", product_df["product_name"].tolist())
+            stock_in = st.number_input("Stock In", min_value=0, step=1)
+            stock_out = st.number_input("Stock Out", min_value=0, step=1)
+            price = st.number_input("Price per Unit", min_value=0.0, step=0.1)
+            submitted_inv = st.form_submit_button("Add Inventory Entry")
         if not product_df.empty:
             selected_product = st.selectbox("Select Product", product_df["product_name"].tolist())
             stock_in = st.number_input("Stock In", min_value=0, step=1)
@@ -88,7 +95,9 @@ def register_product(product_df):
             except Exception as e:
                 st.warning("⚠️ Could not calculate current stock due to a query error.")
 
-            if st.button("✅ Confirm and Submit Entry"):
+            if stock_out > current_balance:
+                st.error(f"❌ Stock out ({stock_out}) exceeds available balance ({current_balance}). Entry not allowed.")
+            elif st.button("✅ Confirm and Submit Entry"):
                 product_row = product_df[product_df["product_name"] == selected_product].iloc[0]
                 peru_tz = pytz.timezone("America/Lima")
                 now = datetime.now(peru_tz)
@@ -114,7 +123,7 @@ def register_product(product_df):
                 conn.commit()
                 st.success("Inventory entry added successfully!")
         else:
-            st.warning("Please register a product before adding inventory entries.")
+        st.warning("Please register a product before adding inventory entries.")
     st.subheader("➕ Register New Product")
     with st.form("product_form"):
         product_id = st.text_input("Product ID")
@@ -282,5 +291,6 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
 
 
