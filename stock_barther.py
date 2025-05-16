@@ -62,6 +62,8 @@ def register_product(product_df):
         with st.form("inventory_form"):
             selected_product = st.selectbox("Select Product", product_df["product_name"].tolist(), key="inv_select")
             product_row = product_df[product_df["product_name"] == selected_product].iloc[0]
+            st.markdown(f"**Expiration Date:** {product_row['expiration_date']}")
+            st.markdown(f"**Total Registered Units:** {product_row['total_units']}")
             st.markdown(f"**Unit Type:** {product_row['unit_type']}")
             st.markdown(f"**Batch ID:** {product_row['batch_id']}")
             stock_in = st.number_input("Stock In", min_value=0, step=1, key="inv_stock_in")
@@ -119,8 +121,8 @@ GROUP BY name
                     product_row["batch_id"],
                     date_str,
                     time_str,
-                    "",
-                    "",
+                    date_str if stock_out > 0 else "",
+                    time_str if stock_out > 0 else "",
 current_balance
 ))
                 conn.commit()
@@ -320,8 +322,6 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
-
-
 
 
 
