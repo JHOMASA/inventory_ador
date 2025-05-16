@@ -84,7 +84,7 @@ def register_product(product_df):
             # Show current stock balance for this product
             try:
                 stock_summary = pd.read_sql("""
-                SELECT name, SUM(stock_in) AS total_in, SUM(stock_out) AS total_out
+SELECT name, SUM(stock_in) AS total_in, SUM(stock_out) AS total_out
                 FROM inventory_log
                 WHERE name = ?
                 GROUP BY name
@@ -108,7 +108,7 @@ def register_product(product_df):
                 time_str = now.strftime("%H:%M:%S")
                 cursor.execute("""
                     INSERT INTO inventory_log (product_id, name, description, stock_in, stock_out, price, units, batch_id, date_in, time_in, date_out, time_out, current_inventory)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (?P<current_balance>current_balance))
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """, (
                     product_row["product_id"],
                     selected_product,
@@ -190,7 +190,18 @@ if menu == "Dashboard":
     try:
         st.subheader("📋 Current Inventory")
         inventory_df = pd.read_sql("SELECT *, (stock_in - stock_out) AS stock_total FROM inventory_log", conn)
-        st.dataframe(inventory_df, use_container_width=True)
+        import numpy as np
+
+        def highlight_stock(row):
+            if row["stock_total"] <= 5:
+                return ["background-color: #ffcccc"] * len(row)
+            elif row["stock_total"] <= 10:
+                return ["background-color: #fff3cd"] * len(row)
+            else:
+                return [""] * len(row)
+
+        styled_inventory = inventory_df.style.apply(highlight_stock, axis=1)
+        st.dataframe(styled_inventory, use_container_width=True)
 
         selected_log = st.selectbox("Select Inventory Row ID to Delete", inventory_df["id"].tolist() if not inventory_df.empty else [])
         if st.button("🗑️ Delete Selected Inventory Record"):
