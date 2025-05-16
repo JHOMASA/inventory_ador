@@ -133,13 +133,13 @@ current_balance
         col1, col2 = st.columns(2)
         with col1:
             product_id = st.text_input("Product ID")
-            product_name = st.text_input("Product Name")
-            unit_type = st.text_input("Unit Type")
-            batch_id = st.text_input("Batch ID")
-            total_units_input = st.number_input("Total Units", min_value=0)
+            product_name = st.text_input("Product Name", key="product_name")
+            unit_type = st.text_input("Unit Type", key="unit_type")
+            batch_id = st.text_input("Batch ID", key="batch_id")
+            total_units_input = st.number_input("Total Units", min_value=0, key="total_units")
         with col2:
-            description = st.text_area("Description")
-            expiration_input = st.date_input("Expiration Date")
+            description = st.text_area("Description", key="description")
+            expiration_input = st.date_input("Expiration Date", key="expiration_date")
         product_name = st.text_input("Product Name")
         description = st.text_area("Description")
         unit_type = st.text_input("Unit Type")
@@ -315,3 +315,4 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
