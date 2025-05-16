@@ -8,6 +8,38 @@ import io
 conn = sqlite3.connect("inventory.db", check_same_thread=False)
 cursor = conn.cursor()
 
+# Ensure tables exist
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS product_registry (
+    product_id TEXT PRIMARY KEY,
+    product_name TEXT,
+    description TEXT,
+    unit_type TEXT,
+    batch_id TEXT,
+    date_registered TEXT
+)
+""")
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS inventory_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id TEXT,
+    name TEXT,
+    description TEXT,
+    stock_in INTEGER,
+    stock_out INTEGER,
+    price REAL,
+    units TEXT,
+    batch_id TEXT,
+    date_in TEXT,
+    time_in TEXT,
+    date_out TEXT,
+    time_out TEXT
+)
+""")
+
+conn.commit()
+
 # Navigation
 st.set_page_config(page_title="Inventory Management", layout="wide")
 menu = st.sidebar.radio("Navigation", ["Dashboard", "SQL Console"])
@@ -20,14 +52,22 @@ if menu == "Dashboard":
     st.title("📦 Inventory In/Out Dashboard - 40 Items")
 
     # -- Product Registry Sheet --
-    st.subheader("📒 Product Registry")
-    product_df = pd.read_sql("SELECT * FROM product_registry", conn)
-    st.dataframe(product_df, use_container_width=True)
+    try:
+        st.subheader("📒 Product Registry")
+        product_df = pd.read_sql("SELECT * FROM product_registry", conn)
+        st.dataframe(product_df, use_container_width=True)
+    except Exception:
+        product_df = pd.DataFrame()
+        st.warning("📭 Product registry is empty or missing.")
 
     # -- Inventory Log Sheet (Stock Movements) --
-    st.subheader("📋 Current Inventory")
-    inventory_df = pd.read_sql("SELECT * FROM inventory_log", conn)
-    st.dataframe(inventory_df, use_container_width=True)
+    try:
+        st.subheader("📋 Current Inventory")
+        inventory_df = pd.read_sql("SELECT * FROM inventory_log", conn)
+        st.dataframe(inventory_df, use_container_width=True)
+    except Exception:
+        inventory_df = pd.DataFrame()
+        st.warning("📭 Inventory log is empty or missing.")
 
     def convert_multi_sheet_excel(products_df, inventory_df):
         output = io.BytesIO()
@@ -60,11 +100,13 @@ if menu == "Dashboard":
 
     # Raw Database Tables
     with st.expander("📂 Show Raw Tables"):
-        st.subheader("🗂 Product Registry (Raw View)")
-        st.dataframe(pd.read_sql("SELECT * FROM product_registry", conn))
-
-        st.subheader("🧾 Inventory Log (Raw View)")
-        st.dataframe(pd.read_sql("SELECT * FROM inventory_log", conn))
+        try:
+            st.subheader("🗂 Product Registry (Raw View)")
+            st.dataframe(pd.read_sql("SELECT * FROM product_registry", conn))
+            st.subheader("🧾 Inventory Log (Raw View)")
+            st.dataframe(pd.read_sql("SELECT * FROM inventory_log", conn))
+        except Exception:
+            st.info("🔍 Tables will appear here once data is entered.")
 
         with open("inventory.db", "rb") as db_file:
             st.download_button(
@@ -118,3 +160,4 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
