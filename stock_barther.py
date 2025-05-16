@@ -84,11 +84,11 @@ def register_product(product_df):
             # Show current stock balance for this product
             try:
                 stock_summary = pd.read_sql("""
-                SELECT name, SUM(stock_in) AS total_in, SUM(stock_out) AS total_out
-                FROM inventory_log
-                WHERE name = ?
-                GROUP BY name
-            """, conn, params=(selected_product,)))
+SELECT name, SUM(stock_in) AS total_in, SUM(stock_out) AS total_out
+FROM inventory_log
+WHERE name = ?
+GROUP BY name
+""", conn, params=(selected_product,)))
 
                 if not stock_summary.empty:
                     current_balance = stock_summary["total_in"].iloc[0] - stock_summary["total_out"].iloc[0]
@@ -315,6 +315,4 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
-
-
 
