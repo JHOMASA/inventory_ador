@@ -134,12 +134,7 @@ current_balance
         with col2:
             description = st.text_area("Description", key="description")
             expiration_input = st.date_input("Expiration Date", key="expiration_date")
-        product_name = st.text_input("Product Name")
-        description = st.text_area("Description")
-        unit_type = st.text_input("Unit Type")
-        batch_id = st.text_input("Batch ID")
-        total_units_input = st.number_input("Total Units", min_value=0)
-        expiration_input = st.date_input("Expiration Date")
+        
         submitted = st.form_submit_button("Register Product")
         if submitted:
             try:
@@ -184,6 +179,13 @@ if menu == "Dashboard":
     try:
         st.subheader("📋 Current Inventory")
         inventory_df = pd.read_sql("SELECT *, (stock_in - stock_out) AS stock_total FROM inventory_log", conn)
+        inventory_df["trend"] = inventory_df["stock_in"] - inventory_df["stock_out"]
+        inventory_df["trend_icon"] = inventory_df["trend"].apply(lambda x: "📈" if x > 0 else ("📉" if x < 0 else "➖"))
+        inventory_df["name"] = inventory_df["trend_icon"] + " " + inventory_df["name"]
+
+        trend_summary = inventory_df.groupby("name")["trend"].sum().reset_index().rename(columns={"trend": "total_trend"})
+        st.subheader("📊 Product Trend Summary")
+        st.dataframe(trend_summary, use_container_width=True)
         import numpy as np
 
         def highlight_stock(row):
@@ -309,5 +311,6 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
 
 
