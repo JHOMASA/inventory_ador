@@ -53,7 +53,14 @@ if "query_history" not in st.session_state:
     st.session_state.query_history = []
 
 # Product registration form
-def register_product(product_df):
+def register_product(product_df)
+
+    # Add date range and product filter
+    st.subheader("🔎 Filter Inventory History")
+    with st.expander("📅 Filter Options"):
+        products = product_df["product_name"].unique().tolist() if not product_df.empty else []
+        selected_products = st.multiselect("Select Products", options=products, default=products)
+        date_range = st.date_input("Select Date Range", value=(datetime(2024, 1, 1), datetime.now())):
 
     # Inventory entry form
     st.subheader("📥 Add Inventory Movement")
@@ -186,6 +193,9 @@ if menu == "Dashboard":
     try:
         st.subheader("📋 Current Inventory")
         inventory_df = pd.read_sql("SELECT *, (stock_in - stock_out) AS stock_total, (stock_in - stock_out) AS stock_change FROM inventory_log", conn)
+        inventory_df["date_in"] = pd.to_datetime(inventory_df["date_in"])
+        inventory_df = inventory_df[inventory_df["name"].isin(selected_products)]
+        inventory_df = inventory_df[(inventory_df["date_in"] >= pd.to_datetime(date_range[0])) & (inventory_df["date_in"] <= pd.to_datetime(date_range[1]))]
         inventory_df["trend"] = inventory_df["stock_in"] - inventory_df["stock_out"]
         inventory_df["trend_icon"] = inventory_df["trend"].apply(lambda x: "📈" if x > 0 else ("📉" if x < 0 else "➖"))
         inventory_df["display_name"] = inventory_df["trend_icon"] + " " + inventory_df["name"]
@@ -197,6 +207,21 @@ if menu == "Dashboard":
         import plotly.express as px
         fig = px.bar(trend_summary, x="display_name", y="total_trend", color="total_trend", title="📈 Trend Change per Product")
         st.plotly_chart(fig, use_container_width=True)
+
+        # Optional: time series line chart
+        if not inventory_df.empty:
+            inventory_df["datetime"] = pd.to_datetime(inventory_df["date_in"] + " " + inventory_df["time_in"])
+            for product in inventory_df["name"].unique():
+                product_data = inventory_df[inventory_df["name"] == product]
+                product_data = product_data.sort_values("datetime")
+                product_data["daily_net"] = product_data["stock_in"] - product_data["stock_out"]
+                daily_trend = product_data.groupby(product_data["datetime"].dt.date)["daily_net"].sum().reset_index()
+                fig_bar = px.bar(daily_trend, x="datetime", y="daily_net", title=f"📊 Daily Stock Variation for {product}", labels={"daily_net": "Net Change"})
+                st.plotly_chart(fig_bar, use_container_width=True)
+
+                product_data["cumulative"] = product_data["daily_net"].cumsum()
+                fig_line = px.line(product_data, x="datetime", y="cumulative", title=f"📉 Stock Trend for {product}", markers=True)
+                st.plotly_chart(fig_line, use_container_width=True)
         import numpy as np
 
         def highlight_stock(row):
