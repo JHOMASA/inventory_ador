@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS inventory_log (
     date_in TEXT,
     time_in TEXT,
     date_out TEXT,
-    time_out TEXT
-)
+    time_out TEXT,
+    current_inventory INTEGER
 """)
 
 conn.commit()
@@ -104,9 +104,9 @@ def register_product(product_df):
                 date_str = now.strftime("%Y-%m-%d")
                 time_str = now.strftime("%H:%M:%S")
                 cursor.execute("""
-                    INSERT INTO inventory_log (product_id, name, description, stock_in, stock_out, price, units, batch_id, date_in, time_in, date_out, time_out)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
+                    INSERT INTO inventory_log (product_id, name, description, stock_in, stock_out, price, units, batch_id, date_in, time_in, date_out, time_out, current_inventory)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (?P<current_balance>current_balance))
+""", (
                     product_row["product_id"],
                     selected_product,
                     product_row["description"],
@@ -118,15 +118,25 @@ def register_product(product_df):
                     date_str,
                     time_str,
                     "",
-                    ""
-                ))
+                    "",
+current_balance
+))
                 conn.commit()
                 st.success("Inventory entry added successfully!")
         else:
             st.warning("Please register a product before adding inventory entries.")
     st.subheader("➕ Register New Product")
     with st.form("product_form"):
-        product_id = st.text_input("Product ID")
+        col1, col2 = st.columns(2)
+        with col1:
+            product_id = st.text_input("Product ID")
+            product_name = st.text_input("Product Name")
+            unit_type = st.text_input("Unit Type")
+            batch_id = st.text_input("Batch ID")
+            total_units_input = st.number_input("Total Units", min_value=0)
+        with col2:
+            description = st.text_area("Description")
+            expiration_input = st.date_input("Expiration Date")
         product_name = st.text_input("Product Name")
         description = st.text_area("Description")
         unit_type = st.text_input("Unit Type")
