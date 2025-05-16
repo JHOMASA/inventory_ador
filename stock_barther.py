@@ -63,6 +63,8 @@ def register_product(product_df):
             submitted_inv = st.form_submit_button("Add Entry")
             if submitted_inv:
                 now = datetime.now()
+date_str = date_str
+time_str = time_str
                 cursor.execute("""
                     INSERT INTO inventory_log (product_id, name, description, stock_in, stock_out, price, units, batch_id, date_in, time_in, date_out, time_out)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -77,8 +79,8 @@ def register_product(product_df):
                     product_row["batch_id"],
                     now.strftime("%Y-%m-%d"),
                     now.strftime("%H:%M:%S"),
-                    now.strftime("%Y-%m-%d") if stock_out > 0 else "",
-                    now.strftime("%H:%M:%S") if stock_out > 0 else ""
+                    date_str if stock_out > 0 else "",
+                    time_str if stock_out > 0 else ""
                 ))
                 conn.commit()
                 st.success("Inventory entry added successfully!")
@@ -123,6 +125,18 @@ if menu == "Dashboard":
 
     try:
         st.subheader("📋 Current Inventory")
+
+        # Check for low inventory warnings
+        try:
+            stock_summary = inventory_df.groupby("name")[["stock_in", "stock_out"]].sum()
+            stock_summary["balance"] = stock_summary["stock_in"] - stock_summary["stock_out"]
+            for product in stock_summary.index:
+                total_in = stock_summary.loc[product, "stock_in"]
+                balance = stock_summary.loc[product, "balance"]
+                if total_in > 0 and balance / total_in <= 0.2:
+                    st.warning(f"⚠️ Warning: '{product}' has dropped to {balance} units, which is below 20% of its total stock ({total_in}).")
+        except Exception as e:
+            st.info("ℹ️ Unable to calculate inventory warnings due to missing or malformed data.")
         inventory_df = pd.read_sql("SELECT * FROM inventory_log", conn)
         st.dataframe(inventory_df, use_container_width=True)
     except Exception:
@@ -218,3 +232,4 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
