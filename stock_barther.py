@@ -106,6 +106,11 @@ def register_product(product_df):
 if menu == "Dashboard":
     st.title("📦 Inventory In/Out Dashboard - 40 Items")
 
+    try:
+        product_df = pd.read_sql("SELECT * FROM product_registry", conn)
+    except Exception:
+        product_df = pd.DataFrame()
+
     register_product(product_df)
 
     try:
