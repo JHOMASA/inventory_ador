@@ -65,8 +65,6 @@ def register_product(product_df):
                 now = datetime.now()
                 date_str = now.strftime("%Y-%m-%d")
                 time_str = now.strftime("%H:%M:%S")
-date_str = now.strftime("%Y-%m-%d")
-time_str = now.strftime("%H:%M:%S")
                 cursor.execute("""
                     INSERT INTO inventory_log (product_id, name, description, stock_in, stock_out, price, units, batch_id, date_in, time_in, date_out, time_out)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -234,6 +232,7 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
 
 
 
