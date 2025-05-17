@@ -53,14 +53,14 @@ if "query_history" not in st.session_state:
     st.session_state.query_history = []
 
 # Product registration form
-def register_product(product_df)
+def register_product(product_df):
 
     # Add date range and product filter
     st.subheader("🔎 Filter Inventory History")
     with st.expander("📅 Filter Options"):
         products = product_df["product_name"].unique().tolist() if not product_df.empty else []
         selected_products = st.multiselect("Select Products", options=products, default=products)
-        date_range = st.date_input("Select Date Range", value=(datetime(2024, 1, 1), datetime.now())):
+        date_range = st.date_input("Select Date Range", value=(datetime(2024, 1, 1), datetime.now()))
 
     # Inventory entry form
     st.subheader("📥 Add Inventory Movement")
