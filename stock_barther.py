@@ -72,7 +72,7 @@ def register_product(product_df):
             FROM inventory_log
             GROUP BY name
         """, conn)
-        stock_check = stock_check.sort_values("total_available", ascending=True)""", conn)
+        stock_check = stock_check.sort_values("total_available", ascending=True)
         st.dataframe(stock_check, use_container_width=True)
     except Exception as e:
         st.info("ℹ️ No stock data available yet to summarize.")
