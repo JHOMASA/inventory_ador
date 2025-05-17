@@ -361,5 +361,3 @@ elif menu == "SQL Console":
                 query_input = q
 
 
-
-
