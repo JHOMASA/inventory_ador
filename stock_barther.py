@@ -64,7 +64,7 @@ def register_product(product_df):
 
     # Inventory entry form
     st.subheader("📥 Add Inventory Movement")
-    st.markdown("### 📊 Current Stock Summary")
+    st.markdown("### 📊 Current Stock Summary (Linked to Product Selection Below)")
     try:
         stock_check = pd.read_sql("""
             SELECT name, SUM(stock_in) AS total_in, SUM(stock_out) AS total_out,
@@ -72,6 +72,7 @@ def register_product(product_df):
             FROM inventory_log
             GROUP BY name
         """, conn)
+        stock_check = stock_check.sort_values("total_available", ascending=True)""", conn)
         st.dataframe(stock_check, use_container_width=True)
     except Exception as e:
         st.info("ℹ️ No stock data available yet to summarize.")
