@@ -64,6 +64,17 @@ def register_product(product_df):
 
     # Inventory entry form
     st.subheader("📥 Add Inventory Movement")
+    st.markdown("### 📊 Current Stock Summary")
+    try:
+        stock_check = pd.read_sql("""
+            SELECT name, SUM(stock_in) AS total_in, SUM(stock_out) AS total_out,
+                   (SUM(stock_in) - SUM(stock_out)) AS total_available
+            FROM inventory_log
+            GROUP BY name
+        """, conn)
+        st.dataframe(stock_check, use_container_width=True)
+    except Exception as e:
+        st.info("ℹ️ No stock data available yet to summarize.")
 
     if not product_df.empty:
         with st.form("inventory_form"):
@@ -347,6 +358,7 @@ elif menu == "SQL Console":
         for q in st.session_state.query_history:
             if st.button(f"📋 {q}"):
                 query_input = q
+
 
 
 
